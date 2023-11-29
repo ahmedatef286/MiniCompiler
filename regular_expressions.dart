@@ -117,6 +117,7 @@ RegExp dataTransferExpressionRegex = RegExp(r"^" +
   // print(match?.group(0).toString().split(" "));
   print(logical.hasMatch('andi \$1,\$2,100')); */
 
+//FOCUSImplement el function el bet2asem
 void tokenize(String input) {
   if (arithmeticExpressionrRegex.hasMatch(input)) {
   } else if (dataTransferExpressionRegex.hasMatch(input)) {}
