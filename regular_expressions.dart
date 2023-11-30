@@ -1,5 +1,5 @@
 //common
-String identifierRegex = r"([a-zA-z]|[.]|[_])([a-zA-z]|[.]|[_]|[0-9])*";
+String identifierRegex = r"([a-z]|[A-Z]|[.]|[_])([a-z]|[A-Z]|[.]|[_]|[0-9])*";
 String registerRegex =
     r"[$](([0-9]|[12][0-9]|3[0-1])|(v[01]|a[0-3]|t[0-9]|s[0-7]|ra))";
 String integerRegex = r"[0-9]+";
@@ -47,9 +47,9 @@ RegExp arithmeticExpressionrRegex = RegExp(r"^" +
 
 /////////////////////data transfer
 ///building blocks
-String dataTransferOpLabelRegex = r"lw|sw|la";
+String dataTransferOpLabelRegex = r"(lw|sw|la)";
 String dataTransferOpRegisterOnlyRegex = r"move";
-String dataTransferOpRegisterOffsetRegex = r"lw|sw";
+String dataTransferOpRegisterOffsetRegex = r"(lw|sw)";
 String dataTransferOpImmediateRegex = r"li";
 //
 String dataTransferExpressionLabelRegex = r"(\s)*" +
@@ -74,7 +74,7 @@ String dataTransferExpressionRegisterOffsetRegex = r"(\s)*" +
     integerRegex +
     r"[(]" +
     registerRegex +
-    r"[)]";
+    r"[)]$";
 //
 String dataTransferExpressionImmediateRegex = r"(\s)*" +
     dataTransferOpImmediateRegex +
@@ -84,13 +84,13 @@ String dataTransferExpressionImmediateRegex = r"(\s)*" +
     integerRegex;
 //
 RegExp dataTransferExpressionRegex = RegExp(r"^" +
-    dataTransferExpressionLabelRegex +
+    /*  dataTransferExpressionLabelRegex +
     r"|" +
     dataTransferExpressionRegisterOnlyRegex +
-    r"|" +
+    r"|" + */
     dataTransferExpressionRegisterOffsetRegex +
-    r"|" +
-    dataTransferExpressionImmediateRegex +
+    /*   r"|" +
+    dataTransferExpressionImmediateRegex + */
     r"(\s)*$");
 
 /* 
@@ -117,8 +117,54 @@ RegExp dataTransferExpressionRegex = RegExp(r"^" +
   // print(match?.group(0).toString().split(" "));
   print(logical.hasMatch('andi \$1,\$2,100')); */
 
+//////////////////////////////////////
+/////tokens and lexems
+Map<String, String> regexTokens = {
+  registerRegex: "Register",
+  commaRegex: "Comma",
+  r"mul": "Mul",
+  r"mult": "Mult",
+  r"sub": "Sub",
+  r"add": "Add",
+  r"addi": "AddImmediate",
+  r"subi": "SubImmediate",
+  r"addu": "AddUnsigned",
+  r"subu": "SubUnsigned",
+  r"div": "Div",
+  r"[(]": "LeftBracket",
+  r"[)]": "RightBracket",
+  r"lw": "LoadWord",
+  r"sw": "SaveWord",
+  r"la": "LoadAddress",
+  r"move": "Move",
+  r"li": "LoadImmediate",
+
+  identifierRegex:
+      "Identifier", //moved it to last so that it doesn't match incorrectly early
+  integerRegex: "Integer",
+};
 //FOCUSImplement el function el bet2asem
 void tokenize(String input) {
-  if (arithmeticExpressionrRegex.hasMatch(input)) {
-  } else if (dataTransferExpressionRegex.hasMatch(input)) {}
+  List<String> lines = input.split("\n");
+  for (String line in lines) {
+    if (arithmeticExpressionrRegex.hasMatch(line) ||
+        dataTransferExpressionRegex.hasMatch(line)) {
+      //
+      List<String> lexems = line.split(RegExp(
+          r'(?<=[ ,])|(?=[ ,])|(?<=[ (])|(?=[ (])|(?<=[ )])|(?=[ )])')); //positive look ahead and behind ie split by commas and spaces but also include the commas in the produced list
+      for (int i = 0; i < lexems.length; i++) {
+        lexems[i] = lexems[i].trim();
+      }
+      lexems.removeWhere((part) => part.isEmpty);
+      print(lexems);
+      for (String lexeme in lexems) {
+        for (var regex in regexTokens.entries) {
+          if (RegExp(regex.key).hasMatch(lexeme)) {
+            print('Token: ${regex.value}, lexeme: ${lexeme}');
+            break;
+          }
+        }
+      }
+    }
+  }
 }
