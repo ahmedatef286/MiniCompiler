@@ -5,7 +5,7 @@ class StringPair {
   StringPair(this.key, this.value);
   @override
   String toString() {
-    return 'Token : ' + this.key + ' Lexeme : ' + this.value;
+    return 'Token: ' + this.key + ', Lexeme: ' + this.value;
   }
 }
 
@@ -197,12 +197,19 @@ void tokenize(String input) {
           }
         }
       }
+    } else {
+      print('Incorrect expression');
     }
   }
+  print('\nOutput (Tokens and Symbol Table)\n');
   outputTokensAndLexemes.forEach(
     (element) {
       print(element);
     },
   );
-  print(outputSymbolTable);
+  print('\nSymbol Table\n');
+
+  outputSymbolTable.forEach((key, value) {
+    print('Name: $key, Type: $value');
+  });
 }
