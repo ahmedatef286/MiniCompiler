@@ -1,4 +1,4 @@
-import 'regular_expressions.dart';
+import './services/regular_expressions.dart';
 
 List<String> assemblyCodes = [
   '''lw \$t0, result
@@ -43,6 +43,7 @@ List<String> assemblyCodes = [
 ];
 
 void main() {
+  //print(dataTransferExpressionRegex.hasMatch('lw \$1 , 100(\$31)'));
 //   tokenize("""lw \$t0, num1
 //  lw \$t1, num2
 //  add \$t2, \$t0, \$t1

@@ -5,8 +5,7 @@ class StringPair {
   StringPair(this.key, this.value);
   @override
   String toString() {
-    // TODO: implement toString
-    return 'Token: ' + this.key + ' Lexeme: ' + this.value;
+    return 'Token: ' + this.key + ', Lexeme: ' + this.value;
   }
 }
 
@@ -170,6 +169,7 @@ Map<String, String> regexTokens = {
 
 List<StringPair> outputTokensAndLexemes = [];
 Map<String, String> outputSymbolTable = {};
+
 //FOCUSImplement el function el bet2asem
 void tokenize(String input) {
   List<String> lines = input.split("\n");
@@ -187,7 +187,7 @@ void tokenize(String input) {
       for (String lexeme in lexems) {
         for (var regex in regexTokens.entries) {
           if (RegExp(regex.key).hasMatch(lexeme)) {
-            //save token and lexeme in map
+            //save token and lexeme
             outputTokensAndLexemes.add(StringPair(regex.value, lexeme));
             //save identifiers in symbole table
             if (regex.value == 'Identifier') {
@@ -197,12 +197,19 @@ void tokenize(String input) {
           }
         }
       }
+    } else {
+      print('Incorrect expression');
     }
   }
+  print('\nOutput (Tokens and Symbol Table)\n');
   outputTokensAndLexemes.forEach(
     (element) {
       print(element);
     },
   );
-  print(outputSymbolTable);
+  print('\nSymbol Table\n');
+
+  outputSymbolTable.forEach((key, value) {
+    print('Name: $key, Type: $value');
+  });
 }
