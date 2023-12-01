@@ -199,4 +199,10 @@ void tokenize(String input) {
       }
     }
   }
+  outputTokensAndLexemes.forEach(
+    (element) {
+      print(element);
+    },
+  );
+  print(outputSymbolTable);
 }
