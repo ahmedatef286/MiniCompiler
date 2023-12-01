@@ -6,7 +6,7 @@ class StringPair {
   @override
   String toString() {
     // TODO: implement toString
-    return 'Token : ' + this.key + ' Lexeme : ' + this.value;
+    return 'Token: ' + this.key + ' Lexeme: ' + this.value;
   }
 }
 
@@ -199,6 +199,10 @@ void tokenize(String input) {
       }
     }
   }
-  print(outputTokensAndLexemes);
+  outputTokensAndLexemes.forEach(
+    (element) {
+      print(element);
+    },
+  );
   print(outputSymbolTable);
 }
