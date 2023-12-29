@@ -39,7 +39,15 @@ List<String> assemblyCodes = [
   lui \$t1, 0xFFFF
   sw \$t1, result''',
   '''la \$t0, value
-  lw \$t1, 0(\$t0)'''
+  lw \$t1, 0(\$t0)''',
+  '''lw \$v0 , hamada
+  bne \$s0 , \$s2 , L1
+  add \$s0, \$s1, num4
+  b Exit
+  Default :
+  move num2 , zero
+  Exit :
+ '''
 ];
 
 void main() {
@@ -49,5 +57,6 @@ void main() {
 //  add \$t2, \$t0, \$t1
 //  sw \$t2, sum """);
 
-  tokenize(assemblyCodes[0]);
+  tokenize(assemblyCodes[10]);
+  parse(outputTokensAndLexemes);
 }

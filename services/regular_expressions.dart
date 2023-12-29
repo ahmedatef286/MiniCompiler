@@ -9,12 +9,37 @@ class StringPair {
   }
 }
 
+class Instruction {
+  StringPair instructionTokenAndLexeme;
+  List<StringPair> operands;
+  String operandsTokensAndLexemes = "";
+
+  Instruction(this.instructionTokenAndLexeme, this.operands) {
+    for (int i = 0; i < operands.length; i++) {
+      operandsTokensAndLexemes +=
+          "| | | | -- ${operands[i].key}: ${operands[i].value}" +
+              ((i == operands.length - 1) ? "" : "\n");
+    }
+  }
+
+  String toString() {
+    return '| |--${instructionTokenAndLexeme.key} instruction' +
+        "\n" +
+        '| | |--${instructionTokenAndLexeme.key}: ${instructionTokenAndLexeme.value}' +
+        (operands.isNotEmpty
+            ? ("\n" + "| | |--Operands" + "\n" + operandsTokensAndLexemes)
+            : "");
+  }
+}
+
 //common
 String _identifierRegex = r"([a-z]|[A-Z]|[.]|[_])([a-z]|[A-Z]|[.]|[_]|[0-9])*";
 String _registerRegex =
     r"[$](([0-9]|[12][0-9]|3[0-1])|(v[01]|a[0-3]|t[0-9]|s[0-7]|ra))";
 String _integerRegex = r"[0-9]+";
 String _commaRegex = r"(\s)*,(\s)*";
+String _colonRegex = r"(\s)*:(\s)*";
+String _commentRegex = r"#.*";
 
 /////////////////////arithmatic operations
 ///building blocks
@@ -102,6 +127,7 @@ RegExp dataTransferExpressionRegex = RegExp(r"^" +
     _dataTransferExpressionRegisterOffsetRegex +
     r"|" +
     _dataTransferExpressionImmediateRegex +
+    _commentRegex +
     r"(\s)*$");
 
 /////////////////////logical
@@ -133,13 +159,54 @@ RegExp logicalExpressionRegex = RegExp(r"^" +
     _logicalExpression3RegisterRegex +
     r"|" +
     _logicalExpressionImmediateRegex +
+    _commentRegex +
     r"(\s)*$");
+
+//////////////////////branch and jump
+/////////////////
+String _branchOpOnlyLabel = r"(j|b)";
+String _jumpOp1Register = r"(jr)";
+String _branchOp2Register = r"(beq|bne|bgt|bge|blt|ble)";
+
+//
+String _branchExpressionLabelRegex =
+    r"(\s)*" + _branchOpOnlyLabel + r"(\s)+" + _identifierRegex;
+//
+String _jumpExpression1Register =
+    r"(\s)*" + _jumpOp1Register + r"(\s)+" + _registerRegex;
+//
+String _branchExpression2RegisterLabel = r"(\s)*" +
+    _branchOp2Register +
+    r"(\s)+" +
+    _registerRegex +
+    _commaRegex +
+    _registerRegex +
+    _commaRegex +
+    _identifierRegex;
+//
+String _Label = r"(\s)*" + _identifierRegex + _colonRegex;
+////regex
+RegExp branchJumpExpression = RegExp(r"^" +
+    _branchExpressionLabelRegex +
+    r"|" +
+    _jumpExpression1Register +
+    r"|" +
+    _branchExpression2RegisterLabel +
+    r"|" +
+    _Label +
+    _commentRegex +
+    r"(\s)*$");
+
+////////////////////////////comment regex
+///regex
+RegExp commentFullLine = RegExp(r"^" + r"(\s)*" + _commentRegex + r"(\s)*$");
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /////tokens and lexems
 Map<String, String> regexTokens = {
   _registerRegex: "Register",
   _commaRegex: "Comma",
+  _colonRegex: "Colon",
   r"mul": "Mul",
   r"mult": "Mult",
   r"sub": "Sub",
@@ -161,10 +228,20 @@ Map<String, String> regexTokens = {
   r"andi": "AndImmediate",
   r"sll": "ShiftLeftLogical",
   r"srl": "ShiftRightLogical",
+  r"beq": "BranchOnEqual",
+  r"bne": "BranchOnNotEqual",
+  r"bgt": "BranchOnGreaterThan",
+  r"bge": "BranchOnGreaterThanOrEqual",
+  r"blt": "BranchOnLessThan",
+  r"ble": "BranchOnLessThanOrEqual",
+  r"j": "JumpUnconditional",
+  r"b": "BranchUnconiditional",
+  r"jr": "JumpRegister",
 
   _identifierRegex:
       "Identifier", //moved it to last so that it doesn't match incorrectly early
   _integerRegex: "Integer",
+  _commentRegex: "Comment",
 };
 
 List<StringPair> outputTokensAndLexemes = [];
@@ -175,6 +252,7 @@ void tokenize(String input) {
   List<String> lines = input.split("\n");
   for (String line in lines) {
     if (arithmeticExpressionrRegex.hasMatch(line) ||
+        branchJumpExpression.hasMatch(line) ||
         dataTransferExpressionRegex.hasMatch(line)) {
       //
       List<String> lexems = line.split(RegExp(
@@ -187,16 +265,29 @@ void tokenize(String input) {
       for (String lexeme in lexems) {
         for (var regex in regexTokens.entries) {
           if (RegExp(regex.key).hasMatch(lexeme)) {
+            if (regex.value == "Identifier") {
+              //differentiate between indentifiers and labels
+              if (arithmeticExpressionrRegex.hasMatch(line)) {
+                outputTokensAndLexemes.add(StringPair(regex.value, lexeme));
+              } else {
+                outputTokensAndLexemes.add(StringPair("Label", lexeme));
+                break;
+              }
+            }
+
+            if (regex.value == "Comment") {
+              break;
+            }
+
             //save token and lexeme
             outputTokensAndLexemes.add(StringPair(regex.value, lexeme));
             //save identifiers in symbole table
-            if (regex.value == 'Identifier') {
-              outputSymbolTable[lexeme] = 'memoryAddress';
-            }
+
             break;
           }
         }
       }
+      outputTokensAndLexemes.add(StringPair("Escape", "\n"));
     } else {
       print('Incorrect expression');
     }
@@ -204,7 +295,8 @@ void tokenize(String input) {
   print('\nOutput (Tokens and Symbol Table)\n');
   outputTokensAndLexemes.forEach(
     (element) {
-      print(element);
+      if (element.key != "Escape")
+        print(element); //used to determine line breaks
     },
   );
   print('\nSymbol Table\n');
@@ -212,4 +304,22 @@ void tokenize(String input) {
   outputSymbolTable.forEach((key, value) {
     print('Name: $key, Type: $value');
   });
+}
+
+void parse(List<StringPair> outputTokensAndLexemesIn) {
+  List<Instruction> instructions = [];
+
+  while (outputTokensAndLexemesIn.isNotEmpty) {
+    int firstEscape = outputTokensAndLexemesIn
+        .indexWhere((element) => element.key == "Escape");
+    List<StringPair> line = outputTokensAndLexemesIn.take(firstEscape).toList();
+    outputTokensAndLexemesIn.removeRange(0, firstEscape + 1);
+    instructions
+        .add(Instruction(line[0], line.getRange(1, line.length).toList()));
+  }
+  print("Program\n|-- TextSection");
+  for (Instruction inst in instructions) {
+    print(inst);
+  }
+  print("|-- Exit");
 }
