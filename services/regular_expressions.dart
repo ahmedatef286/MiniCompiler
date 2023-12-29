@@ -23,7 +23,7 @@ class Instruction {
   }
 
   String toString() {
-    return '| |--${instructionTokenAndLexeme.key} instruction' +
+    return '| |--${instructionTokenAndLexeme.key == "Label" ? instructionTokenAndLexeme.value : instructionTokenAndLexeme.key} instruction' +
         "\n" +
         '| | |--${instructionTokenAndLexeme.key}: ${instructionTokenAndLexeme.value}' +
         (operands.isNotEmpty
