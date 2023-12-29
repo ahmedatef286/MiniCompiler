@@ -253,7 +253,6 @@ void tokenizeAndParse(String input) {
   bool hasError = false;
   int i = 0;
   List<int> errorIndicies = [];
-  List<String> errorLines = [];
   List<String> lines = input.split("\n");
   for (String line in lines) {
     if (arithmeticExpressionrRegex.hasMatch(line) ||
@@ -296,7 +295,6 @@ void tokenizeAndParse(String input) {
     } else {
       hasError = true;
       errorIndicies.add(i);
-      errorLines.add(line);
       print('Incorrect expression');
     }
     i++;
@@ -304,7 +302,7 @@ void tokenizeAndParse(String input) {
   if (hasError) {
     print("Syntax errors found in the following lines :-");
     errorIndicies.forEach((element) {
-      print("Line $element => ${errorLines[element]}");
+      print("Line $element => ${lines[element]}");
     });
   } else {
     print('\nOutput (Tokens and Symbol Table)\n');

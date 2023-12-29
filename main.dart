@@ -56,6 +56,5 @@ void main() {
 //  add \$t2, \$t0, \$t1
 //  sw \$t2, sum """);
 
-  // tokenizeAndParse(assemblyCodes[10]);
-  print(branchJumpExpression.hasMatch("j exit a7a"));
+  tokenizeAndParse(assemblyCodes[10]);
 }
