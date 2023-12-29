@@ -271,8 +271,10 @@ void tokenizeAndParse(String input) {
           if (RegExp(regex.key).hasMatch(lexeme)) {
             if (regex.value == "Identifier") {
               //differentiate between indentifiers and labels
-              if (arithmeticExpressionrRegex.hasMatch(line)) {
+              if (arithmeticExpressionrRegex.hasMatch(line) ||
+                  dataTransferExpressionRegex.hasMatch(line)) {
                 outputTokensAndLexemes.add(StringPair(regex.value, lexeme));
+                break;
               } else {
                 outputTokensAndLexemes.add(StringPair("Label", lexeme));
                 break;

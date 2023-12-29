@@ -40,7 +40,7 @@ List<String> assemblyCodes = [
   sw \$t1, result''',
   '''la \$t0, value
   lw \$t1, 0(\$t0)''',
-  '''lw \$v0 , hamada a7a
+  '''lw \$v0 , num1
   bne \$s0 , \$s2 , L1
   add \$s0, \$s1, \$t3
   b Exit
