@@ -35,11 +35,11 @@ class Instruction {
 //common
 String _identifierRegex = r"([a-z]|[A-Z]|[.]|[_])([a-z]|[A-Z]|[.]|[_]|[0-9])*";
 String _registerRegex =
-    r"[$](([0-9]|[12][0-9]|3[0-1])|(v[01]|a[0-3]|t[0-9]|s[0-7]|ra))";
+    r"[$](([0-9]|[12][0-9]|3[0-1])|zero|(v[01]|a[0-3]|t[0-9]|s[0-7]|ra))";
 String _integerRegex = r"[0-9]+";
 String _commaRegex = r"(\s)*,(\s)*";
-String _colonRegex = r"(\s)*:(\s)*";
-String _commentRegex = r"#.*";
+String _colonRegex = r"(\s)*[:](\s)*";
+String _commentRegex = r"(#.*)*";
 
 /////////////////////arithmatic operations
 ///building blocks
@@ -79,6 +79,7 @@ RegExp arithmeticExpressionrRegex = RegExp(r"^" +
     _airthematicExpression2RegisterRegex +
     r"|" +
     _airthematicExpression3RegisterRegex +
+    _commentRegex +
     r"(\s)*$");
 
 /////////////////////data transfer
@@ -248,7 +249,11 @@ List<StringPair> outputTokensAndLexemes = [];
 Map<String, String> outputSymbolTable = {};
 
 //FOCUSImplement el function el bet2asem
-void tokenize(String input) {
+void tokenizeAndParse(String input) {
+  bool hasError = false;
+  int i = 0;
+  List<int> errorIndicies = [];
+  List<String> errorLines = [];
   List<String> lines = input.split("\n");
   for (String line in lines) {
     if (arithmeticExpressionrRegex.hasMatch(line) ||
@@ -289,24 +294,37 @@ void tokenize(String input) {
       }
       outputTokensAndLexemes.add(StringPair("Escape", "\n"));
     } else {
+      hasError = true;
+      errorIndicies.add(i);
+      errorLines.add(line);
       print('Incorrect expression');
     }
+    i++;
   }
-  print('\nOutput (Tokens and Symbol Table)\n');
-  outputTokensAndLexemes.forEach(
-    (element) {
-      if (element.key != "Escape")
-        print(element); //used to determine line breaks
-    },
-  );
-  print('\nSymbol Table\n');
+  if (hasError) {
+    print("Syntax errors found in the following lines :-");
+    errorIndicies.forEach((element) {
+      print("Line $element => ${errorLines[element]}");
+    });
+  } else {
+    print('\nOutput (Tokens and Symbol Table)\n');
+    outputTokensAndLexemes.forEach(
+      (element) {
+        if (element.key != "Escape")
+          print(element); //used to determine line breaks
+      },
+    );
+    print('\nSymbol Table\n');
 
-  outputSymbolTable.forEach((key, value) {
-    print('Name: $key, Type: $value');
-  });
+    outputSymbolTable.forEach((key, value) {
+      print('Name: $key, Type: $value');
+    });
+
+    _parse(outputTokensAndLexemes);
+  }
 }
 
-void parse(List<StringPair> outputTokensAndLexemesIn) {
+void _parse(List<StringPair> outputTokensAndLexemesIn) {
   List<Instruction> instructions = [];
 
   while (outputTokensAndLexemesIn.isNotEmpty) {

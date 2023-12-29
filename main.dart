@@ -40,14 +40,13 @@ List<String> assemblyCodes = [
   sw \$t1, result''',
   '''la \$t0, value
   lw \$t1, 0(\$t0)''',
-  '''lw \$v0 , hamada
+  '''lw \$v0 , hamada a7a
   bne \$s0 , \$s2 , L1
-  add \$s0, \$s1, num4
+  add \$s0, \$s1, \$t3
   b Exit
   Default :
-  move num2 , zero
-  Exit :
- '''
+  move \$s3 , \$zero
+  Exit :'''
 ];
 
 void main() {
@@ -57,6 +56,6 @@ void main() {
 //  add \$t2, \$t0, \$t1
 //  sw \$t2, sum """);
 
-  tokenize(assemblyCodes[10]);
-  parse(outputTokensAndLexemes);
+  // tokenizeAndParse(assemblyCodes[10]);
+  print(branchJumpExpression.hasMatch("j exit a7a"));
 }
