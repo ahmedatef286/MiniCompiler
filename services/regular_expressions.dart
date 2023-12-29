@@ -274,6 +274,7 @@ void tokenizeAndParse(String input) {
               if (arithmeticExpressionrRegex.hasMatch(line) ||
                   dataTransferExpressionRegex.hasMatch(line)) {
                 outputTokensAndLexemes.add(StringPair(regex.value, lexeme));
+                outputSymbolTable[lexeme] = 'memory address';
                 break;
               } else {
                 outputTokensAndLexemes.add(StringPair("Label", lexeme));
@@ -314,11 +315,14 @@ void tokenizeAndParse(String input) {
           print(element); //used to determine line breaks
       },
     );
-    print('\nSymbol Table\n');
+    if (outputSymbolTable.isNotEmpty) {
+      print('\nSymbol Table\n');
 
-    outputSymbolTable.forEach((key, value) {
-      print('Name: $key, Type: $value');
-    });
+      outputSymbolTable.forEach((key, value) {
+        print('Name: $key, Type: $value');
+      });
+      print("\n");
+    }
 
     _parse(outputTokensAndLexemes);
   }
